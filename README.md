@@ -13,6 +13,12 @@
   
   Using the raylib to render test to check physics position and rotate. Note have not test rotate few projects yet due to limited of AI model cool down.
   
+# Projects:
+ * raylib_bullet3_physics_cpp (working)
+ * raylib_jolt_physics (working)
+ * raylib_joltc_physics (N/A)
+ * raylib_ode_physics (working)
+  
 # raylib c/c++:
   Note if you using the VS2022 there will be conflict windows.h with raylib.h as well raymath.h
 

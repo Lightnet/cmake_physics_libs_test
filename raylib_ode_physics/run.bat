@@ -1,3 +1,3 @@
 @echo off
 cd build/Debug
-DropCubeTest.exe
+cube_drop.exe

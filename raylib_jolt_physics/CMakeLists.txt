@@ -53,4 +53,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 # Define WIN32_LEAN_AND_MEAN for all targets
-add_definitions(-DWIN32_LEAN_AND_MEAN)
+#add_definitions(-DWIN32_LEAN_AND_MEAN)

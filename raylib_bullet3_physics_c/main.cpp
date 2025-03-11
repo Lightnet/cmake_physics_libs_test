@@ -1,47 +1,40 @@
 #include "raylib.h"
+#include "raymath.h"
 #include <btBulletDynamicsCommon.h>
-#include <cstdlib> // For rand()
-#include <ctime>   // For seeding rand()
+#include <cstdlib>
+#include <ctime>
+#include <stdio.h>
 
-// Function to generate a random float between -range and +range
 float randomFloat(float range) {
     return ((float)rand() / RAND_MAX) * 2 * range - range;
 }
 
 int main() {
-    // Seed random number generator
     srand((unsigned int)time(nullptr));
 
-    // Initialize raylib
-    const int screenWidth = 800;
-    const int screenHeight = 600;
-    InitWindow(screenWidth, screenHeight, "Drop Cube Test - Bullet3 & raylib");
+    InitWindow(800, 600, "Drop Cube Test - Bullet3 & raylib");
     SetTargetFPS(60);
 
-    // Set up camera
     Camera3D camera = { 0 };
-    camera.position = { 0.0f, 10.0f, 10.0f };
-    camera.target = { 0.0f, 0.0f, 0.0f };
-    camera.up = { 0.0f, 1.0f, 0.0f };
+    camera.position = { 0.0f, 10.0f, 10.0f }; // Initial position
+    camera.target = { 0.0f, 0.0f, 0.0f };     // Initial target
+    camera.up = { 0.0f, 1.0f, 0.0f };         // Initial up vector
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    // Initialize Bullet3 physics
     btBroadphaseInterface* broadphase = new btDbvtBroadphase();
     btDefaultCollisionConfiguration* collisionConfig = new btDefaultCollisionConfiguration();
     btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfig);
     btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver();
     btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfig);
-    dynamicsWorld->setGravity(btVector3(0, -9.81f, 0)); // Gravity in m/s^2
+    dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
 
-    // Ground (static plane)
     btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
     btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
     btRigidBody::btRigidBodyConstructionInfo groundRbInfo(0, groundMotionState, groundShape, btVector3(0, 0, 0));
     btRigidBody* groundRb = new btRigidBody(groundRbInfo);
     dynamicsWorld->addRigidBody(groundRb);
 
-    // Cube (dynamic body)
     btCollisionShape* cubeShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
     btDefaultMotionState* cubeMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 5, 0)));
     btScalar mass = 1.0f;
@@ -51,17 +44,23 @@ int main() {
     btRigidBody* cubeRb = new btRigidBody(cubeRbInfo);
     dynamicsWorld->addRigidBody(cubeRb);
 
-    // Main loop
+    Model cubeModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+
+    char debugText[256];
+    bool mouseCaptured = false; // Track mouse capture state
+
+    // Initially capture the mouse
+    DisableCursor();
+    mouseCaptured = true;
+
     while (!WindowShouldClose()) {
-        // Step the physics simulation
         dynamicsWorld->stepSimulation(1.0f / 60.0f, 10);
 
-        // Reset cube position and apply random rotation on 'R' key press
+        // Reset cube with 'R'
         if (IsKeyPressed(KEY_R)) {
             btTransform resetTransform;
             resetTransform.setIdentity();
             resetTransform.setOrigin(btVector3(0, 5, 0));
-
             float angleX = randomFloat(3.14159f);
             float angleY = randomFloat(3.14159f);
             float angleZ = randomFloat(3.14159f);
@@ -75,7 +74,24 @@ int main() {
             cubeRb->activate(true);
         }
 
-        // Get cube position
+        // Reset camera with '1'
+        if (IsKeyPressed(KEY_ONE)) {
+            camera.position = { 0.0f, 10.0f, 10.0f };
+            camera.target = { 0.0f, 0.0f, 0.0f };
+            camera.up = { 0.0f, 1.0f, 0.0f };
+        }
+
+        // Toggle mouse capture with Escape
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            if (mouseCaptured) {
+                EnableCursor();
+                mouseCaptured = false;
+            } else {
+                DisableCursor();
+                mouseCaptured = true;
+            }
+        }
+
         btTransform cubeTransform;
         cubeRb->getMotionState()->getWorldTransform(cubeTransform);
         Vector3 cubePos = {
@@ -83,28 +99,39 @@ int main() {
             (float)cubeTransform.getOrigin().getY(),
             (float)cubeTransform.getOrigin().getZ()
         };
+        btQuaternion cubeRot = cubeTransform.getRotation();
+        Quaternion raylibRot = { cubeRot.x(), cubeRot.y(), cubeRot.z(), cubeRot.w() };
+        Matrix rotMatrix = QuaternionToMatrix(raylibRot);
+        Matrix transMatrix = MatrixTranslate(cubePos.x, cubePos.y, cubePos.z);
+        cubeModel.transform = MatrixMultiply(rotMatrix, transMatrix);
 
-        // Update camera
-        UpdateCamera(&camera, CAMERA_ORBITAL);
+        // Update camera with free mode
+        UpdateCamera(&camera, CAMERA_FREE);
 
-        // Render
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
         BeginMode3D(camera);
-        // Draw ground
         DrawPlane({0, 0, 0}, {10, 10}, GRAY);
-        // Draw cube (no rotation support in DrawCubeV, using basic DrawCube)
-        DrawCube(cubePos, 1.0f, 1.0f, 1.0f, BLUE);
-        DrawCubeWires(cubePos, 1.0f, 1.0f, 1.0f, BLACK);
+        DrawModel(cubeModel, {0, 0, 0}, 1.0f, BLUE);
+        DrawModelWires(cubeModel, {0, 0, 0}, 1.0f, BLACK);
         DrawGrid(10, 1.0f);
         EndMode3D();
 
+        // Draw debug info
+        sprintf(debugText, "Pos: (%.2f, %.2f, %.2f)", cubePos.x, cubePos.y, cubePos.z);
+        DrawText(debugText, 10, 30, 20, DARKGRAY);
+        sprintf(debugText, "Rot: (%.2f, %.2f, %.2f, %.2f)", cubeRot.x(), cubeRot.y(), cubeRot.z(), cubeRot.w());
+        DrawText(debugText, 10, 50, 20, DARKGRAY);
+
         DrawFPS(10, 10);
+        DrawText("WASD: Move, Mouse: Look, Q/E: Up/Down", 10, 70, 10, DARKGRAY);
+        DrawText("R: Reset Cube, 1: Reset Camera, Esc: Toggle Mouse", 10, 90, 10, DARKGRAY);
+
         EndDrawing();
     }
 
-    // Cleanup Bullet3
+    UnloadModel(cubeModel);
     dynamicsWorld->removeRigidBody(cubeRb);
     dynamicsWorld->removeRigidBody(groundRb);
     delete cubeRb;
@@ -119,8 +146,6 @@ int main() {
     delete collisionConfig;
     delete broadphase;
 
-    // Cleanup raylib
     CloseWindow();
-
     return 0;
 }

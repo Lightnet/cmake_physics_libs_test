@@ -21,7 +21,7 @@ include(FetchContent)
 FetchContent_Declare(
     bullet3
     GIT_REPOSITORY https://github.com/bulletphysics/bullet3.git
-    GIT_TAG        master # Use 'master' or a specific tag like '3.25'
+    GIT_TAG        3.25 # Use 'master' or a specific tag like '3.25'
 )
 set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "Disable Bullet2 demos" FORCE)
 set(BUILD_BULLET3 OFF CACHE BOOL "Disable Bullet3 examples" FORCE)

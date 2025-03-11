@@ -110,11 +110,19 @@ int main() {
                rot[8], rot[9], rot[10], rot[11]);
 
         Matrix rot_matrix = {
-            rot[0], rot[4], rot[8], 0,
-            rot[1], rot[5], rot[9], 0,
-            rot[2], rot[6], rot[10], 0,
+            rot[0], rot[1], rot[2], 0,
+            rot[4], rot[5], rot[6], 0,
+            rot[8], rot[9], rot[10], 0,
             0, 0, 0, 1
         };
+
+        // Matrix rot_matrix = {
+        //     rot[0], rot[4], rot[8], 0,
+        //     rot[1], rot[5], rot[9], 0,
+        //     rot[2], rot[6], rot[10], 0,
+        //     0, 0, 0, 1
+        // };
+        
         Matrix trans_matrix = MatrixTranslate((float)pos[0], (float)pos[1], (float)pos[2]);
         cube_model.transform = MatrixMultiply(rot_matrix, trans_matrix);
 

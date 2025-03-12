@@ -16,19 +16,21 @@
 # Projects:
  * raylib_bullet3_physics_cpp (working)
  * raylib_jolt_physics (working)
- * raylib_joltc_physics (N/A)
  * raylib_ode_physics (working)
+ * raylib_reactphysics3d (working)
   
-# raylib c/c++:
+## raylib:
   Note if you using the VS2022 there will be conflict windows.h with raylib.h as well raymath.h
-
-  c raylib is useable.
-  
-  c++ not useable. Due to namespace and conflict of the windows.h.
   
   It depend on the physics lib config there will be conflicts.
+
+### c:
+  c raylib is useable.
   
 ### c++:
+
+  c++ not useable. Due to namespace and conflict of the windows.h. As well depend on the physics.
+
 ```
 // Standard library includes first
 #include <iostream>

@@ -13,6 +13,10 @@
   
   Using the raylib to render test to check physics position and rotate. Note have not test rotate few projects yet due to limited of AI model cool down.
   
+# CMake:
+  Note that build order is important as follow the script line by line. To be compile by order build.
+
+  
 # Projects:
  * raylib_bullet3_physics_cpp (working)
  * raylib_jolt_physics (working)

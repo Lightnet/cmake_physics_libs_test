@@ -46,5 +46,29 @@ namespace rl {
     #include "raylib.h"
     #include "raymath.h"
 }
+
+int main() {
+  // Initialize Raylib window
+  const int screenWidth = 800;
+  const int screenHeight = 600;
+  rl::InitWindow(screenWidth, screenHeight, "Cube Drop Test");
+  rl::SetTargetFPS(60);
+
+  while (!rl::WindowShouldClose()) {
+    rl::BeginDrawing();
+    rl::ClearBackground(rl::RAYWHITE);
+
+
+    // Draw FPS
+    rl::DrawFPS(10, 10);
+    rl::EndDrawing();
+
+  }
+
+  // Cleanup Raylib
+  rl::CloseWindow();
+
+  return 0;
+}
 ```
 It can be found in github, reddit and other posts.
